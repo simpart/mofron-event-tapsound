@@ -20,13 +20,14 @@ module.exports = class extends Tap {
             super();
             this.modname('TapSound');
             this.shortForm('src');
-
-            this.confmng().add('src', { type:'object' });
             
+            this.confmng().add('src', { type:'string' });
+            this.confmng().add('audio', { type:'object' });
+            this.confmng().add('media', { type:'boolean', init:true });
 
 	    let clk_evt = (c1,c2,c3) => {
                 try {
-                    c3.src().play();
+                    c3.audio().play();
 		} catch (e) {
                     console.error(e.stack);
                     throw e;
@@ -42,17 +43,57 @@ module.exports = class extends Tap {
             throw e;
         }
     }
-
+    
     src (prm) {
         try {
             if (undefined === prm) {
                 return this.confmng('src');
 	    }
-	    this.confmng('src', new Audio(prm));
+            this.confmng('src', prm);
+            if ((true === this.media()) && (window.Media)) {
+                this.confmng('audio', new Media(prm));
+            } else {
+	        this.confmng('audio', new Audio(prm));
+            }
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+    
+    audio (prm) {
+        try {
+	    if ('string' === typeof prm) {
+	        this.src(prm);
+                return;
+	    }
+            return this.confmng('audio', prm);
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+    
+    volume (prm) {
+        try {
+            if ((true === this.media()) && (window.Media)) {
+                this.audio().setVolume(prm);
+            } else {
+                this.audio().volume(prm);
+            }
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+    
+    media (prm) {
+        try {
+            return this.confmng("media", prm);
 	} catch (e) {
             console.error(e.stack);
             throw e;
-	}
+        }
     }
 }
 /* end of file */
